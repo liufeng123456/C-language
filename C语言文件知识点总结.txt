@@ -1,0 +1,98 @@
+C语言文件操作
+1、文件：磁盘上的文件，一般我们谈的文件有两种：程序文件和数据文件
+
+程序文件：源程序文件后缀为.c，目标文件后缀为.obj，可执行程序（windows环境下为.exe）。
+数据文件：程序运行需要从中读取的文件，或者输出内容的文件。
+
+2、文件名：文件路径+文件名主干+文件后缀
+
+文件路径分为绝对路径和相对路径，两者怎么区分？
+绝对路径：以盘符或者根目录开头的如C/D：
+相对路径：以.或者…开头的，但是前提是你必须在当前目录下才能谈及相对路径。以.\开头的表示当前路径，以…\开头的表示当前路径的上一层路径。
+
+3、文件类型
+
+二进制文件和文本文件的区分
+假设在文件中保存一个数字1，文本文件的存储方式为‘1’；而二进制文件存储方式为00000000000000000000000000000001。以另外一种方式来说就是文本文件如果要输出到外存就必须先在存储前转换，然后以ASCII码的形式存储。而二进制文件是以二进制的形式存储。
+
+4、文件操作的函数
+
+fopen:文件的打开函数
+FILE* fopen(const char* filename, const char* mode);
+返回值：
+If the file is successfully opened, the function returns a pointer to a FILE object that can be used to identify the stream on future operations.
+Otherwise, a null pointer is returned.
+On most library implementations, the errno variable is also set to a system-specific error code on failure.
+
+#include<stdio.h>
+int main(){
+	FILE* fp = fopen("./test.txt","r");
+	if(fp == NULL){
+	printf("fopen failed\n");
+	}else{
+	printf("fopen success\n");
+	}
+	return 0;
+}
+如果频繁的进行文件打开，又没有关闭，会造成什么问题？
+资源泄露即文件描述符泄露，所以fopen要搭配fclose使用。
+
+fclose:文件的关闭函数
+int fclose ( FILE * stream );
+返回值：
+If the stream is successfully closed, a zero value is returned.
+On failure, EOF is returned.
+
+#include<stdio.h>
+int main(){
+ FILE* fp = fopen("./test.txt","r");
+ if(fp == NULL){
+ printf("fopen failed\n");
+ }else{
+ printf("fopen success\n");
+ }
+ fclose(fp);
+ return 0;
+}
+fread:文件的读函数,就是把磁盘上的数据读取到内存中。
+size_t fread ( void * ptr, size_t size, size_t count, FILE * stream );
+返回值：
+The total number of elements successfully read is returned.
+If this number differs from the count parameter, either a reading error occurred or the end-of-file was reached while reading. In both cases, the proper indicator is set, which can be checked with ferror and feof, respectively.
+If either size or count is zero, the function returns zero and both the stream state and the content pointed by ptr remain unchanged.
+size_t is an unsigned integral type.
+
+#include<stdio.h>
+int main(){
+ FILE* fp = fopen("./test.txt","r");
+ if(fp == NULL){
+ printf("fopen failed\n");
+ }else{
+ printf("fopen success\n");
+ }
+ char buf[1024] = {0};
+ fread(buf,1,4,fp);
+ printf("%s\n",buf);//结果buf的内容就是fp所指向文件的内容
+ fclose(fp);
+ return 0;
+}
+fwrite:文件的写函数，就是把内存中的数据写到磁盘上。
+函数使用跟fread类似，就不再介绍了
+
+#include<stdio.h>
+int main(){
+ FILE* fp = fopen("./test.txt","r");
+ if(fp == NULL){
+ printf("fopen failed\n");
+ }else{
+ printf("fopen success\n");
+ }
+ char buf[1024] = “haha”;
+ fwrite(buf,1,4,fp);
+ printf("%s\n",buf);//结果fp所指向文件的内容就是buf里面的内容
+ fclose(fp);
+ return 0;
+}
+还有一些文件的操作函数。如fgetc,fputc,fscanf,fprintf,sscanf,ssprintf…。
+尤其是sscanf与sprintf，它们可以实现整数与字符串之间的转化。
+--------------------- 
