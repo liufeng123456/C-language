@@ -1,0 +1,187 @@
+**顺序表**
+-
+顺序表是一段物理地址连续的存储单元依次存储数据元素的线性结构，一般情况下采用数组存储，在数组上完成数据 的增删查改。顺序表又分为静态顺序表和动态顺序表
+1、使用静态顺序表存储
+	
+
+```
+typedef int DataType
+#define MAX_SIZE 100
+struct SeqList{
+	DataType array[MAX_SIZE];//用来存储顺序表中的元素
+	int size;//顺序表中有效元素的个数
+};
+```
+因为数组存储的元素是有限的，此处我们定义的是100。数组的空间是固定的，这个就是按静态顺序表存储 的。如果我们此时想存储101个元素，这个时候这个程序就得修改数组的大小了。所以一般情况下我们都采用动态顺序表来存储。
+2、使用动态顺序表存储
+
+```
+typedef int DataType;
+typedef struct{
+     DataType* _array;
+     int _capacity;//顺序表的总大小 
+     int _size;//顺序表有效元素的个数
+}SeqList，*PSeq;
+```
+首先我们要先对这个顺序表初始化
+
+```
+void SeqListInit(PSeq ps, int capacity) {
+ ps->_array = (DataType*)malloc(sizeof(DataType)*capacity);
+ if (ps->_array == NULL) {//对申请空间进行判断，看是否申请成功；
+  assert(0);
+  return;
+ }
+ ps->_capacity = capacity;
+ ps->_size = 0;//初始化的时候，顺序表中的元素就是0；
+}
+```
+**对顺序表进行增加元素的操作（头插一个元素，尾插一个元素，任意地方插一个元素）**
+
+```
+//尾插
+void SeqListPushBack(PSeq ps, DataType data) {
+ assert(ps);
+ //顺序表满的情况
+ CheckCapacity(ps);
+ ps->_array[ps->_size] = data;
+ ps->_size++;
+}
+//头插
+void SeqListPushFront(PSeq ps, DataType data) {
+ assert(ps);
+ CheckCapacity(ps);
+ //将顺序表中所有的元素统一向后搬移一个位置
+ for (int i = ps->_size; i > 0; --i) {
+  ps->_array[i] = ps->_array[i-1];
+ }
+ //插入元素
+ ps->_array[0] = data;
+ ps->_size++;
+}
+//任意位置插
+void SeqListInsert(PSeq ps, int pos, DataType data) {
+ assert(ps);
+ if (pos < 0|| pos > ps->_size) {
+  return;
+ }
+ for (int i = ps->_size; i > pos; --i) {
+  ps->_array[i] = ps->_array[i - 1];
+ }
+ ps->_array[pos] = data;
+ ps->_size++;
+}
+```
+插入的时候有一个问题就是：如果顺序表中的元素满了，就插不进去了。所以我们在插入之前要对顺序表进行一个检查。
+
+```
+void CheckCapacity(PSeq ps) {
+ assert(ps);
+ if (ps->_size == ps->_capacity) {
+  int newCapacity = ps->_capacity*2;
+  //申请新空间
+  int* pTemp = (DataType*)malloc(newCapacity * sizeof(DataType));
+  if (pTemp == NULL) {
+   assert(0);
+   return;
+  }
+  //拷贝元素
+  for (int i = 0; i < ps->_size; ++i) {
+   pTemp[i] = ps->_array[i];
+  }
+  //释放旧空间
+  free(ps->_array);
+  //更新参数
+  ps->_array = pTemp;
+  ps->_capacity = newCapacity;
+ }
+}
+```
+**对顺序表进行删除的操作（头删，尾删，任意位置删除）**
+
+```
+//尾删
+void SeqListPopBack(PSeq ps) {
+ assert(ps);
+ if (SeqListEmpty(ps)) {
+  return;
+ }
+ ps->_size--;
+ SeqListErase(ps, ps->_size - 1);
+}
+//头删
+void SeqListPopFront(PSeq ps) {
+ assert(ps);
+ for (int i = 0; i < ps->_size-1; ++i) {
+  ps->_array[i] = ps->_array[i+1];
+ }
+ ps->_size--;
+}
+//任意地方删除
+void SeqListErase(PSeq ps, int pos) {
+ assert(ps);
+ if (pos < 0 || pos >= ps->_size) {
+  return;
+ }
+ for (int i = pos; i < ps->_size-1; ++i) {
+  ps->_array[i] = ps->_array[i + 1];
+ }
+ ps->_size--;
+}
+```
+对顺序表进行查找
+
+```
+int SeqListFind(PSeq ps, DataType data) {
+ assert(ps);
+ for (int i = 0; i < ps->_size; ++i) {
+  if (ps->_array[i] == data) {
+   return i;
+  }
+ }
+ return -1;
+}
+```
+移除顺序表中所有值为data的元素
+
+```
+void SeqListRemoveAll(PSeq ps, DataType data) {
+ assert(ps);
+ int pos = -1;
+   while (-1 != (pos = SeqListFind(ps, data))
+      {
+	  SeqListErase(ps,pos);
+      }//时间复杂度o(n^2),算法要进行优化。
+ }
+ //时间复杂度o(n),空间复杂度o(1).
+ void SeqListRemoveAll(PSeq ps, DataType data) {
+ assert(ps);
+ int count = 0;
+ for (int i = 0; i < ps->_size; ++i) {
+  if (ps->_array[i] == data) {
+   count++;
+  } else {
+   ps->_array[i - count] = ps->_array[i];
+  }
+ }
+ ps->_size -= count;
+}
+```
+对顺序表进行清空操作
+
+```
+void SeqListClear(PSeq ps) {
+ assert(ps);
+ ps->_size = 0;
+}
+```
+顺序表的整个程序如下
+
+```
+//SeqList.h头文件的代码
+#pragma once
+typedef int DataType;
+//#define MAX_SIZE 100
+typedef struct SeqList {
+ DataType* _array;//用来存储顺序表中元素
+ int _size;//顺序表中有效元素的
