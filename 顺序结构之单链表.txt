@@ -1,0 +1,210 @@
+
+**链表**
+-
+顺序表的增容需要malloc一段新空间，如果这个空间足够大，我们用不完这些空间势必就会造成空间的浪费。而且我们增容之后还要拷贝原空间的数据，释放旧空间，这样操作起来也比较麻烦。对于链表就恰恰能够解决这个问题。
+**单链表**
+1、逻辑上连续，位置上可以不连续的存储方式。
+2、单链表由无数个结点组成，每个结点都有数据段和指针域组成。其中数据段存储数据，指针域存储后继的地址。
+3、每个结点最多只能有一个前继结点和后继结点。
+4、第一个结点没有前继结点，最后一个结点没有后继结点。所以我们通常建立一个头结点来保存链表的位置，而头节点的数据段我们不关注。由于最后一个结点没有后继节点，所以我们通常将最后一个结点的指针域置为NULL。
+Slist.h实现
+#pragma once
+#include <stdio.h>
+typedef int DataType;
+//链表的结点
+typedef struct SlistNode {
+ DataType data;
+ struct SlistNode* next;
+}Node,*PNode;
+typedef struct Slist {
+ PNode head;
+}Slist,*PSlist;
+//初始化
+void SlistInit(Slist* s);
+//尾插
+void SlistPushBack(Slist* s, DataType data);
+//新增节点
+PNode BuySListNode(DataType date);
+//尾删
+void SlistPopBack(Slist* s);
+//头插
+void SlistPushFront(Slist* s, DataType data);
+//头删
+void SlistPopFront(Slist* s);
+void PrintSlist(Slist* s);
+void SlistInsert(PNode pos, DataType data);
+void SlistErase(Slist* s,PNode pos);
+PNode SlistFind(Slist* s,DataType data);
+size_t SlistSize(Slist* s);
+int SlistEmpty(Slist* s);
+void TestSlist();
+```
+
+Slist.c实现
+#include
+Slist.c
+#include"SList.h"
+#include<assert.h>
+#include<malloc.h>
+#include<stdio.h>
+#include<stdlib.h>
+void SlistInit(Slist*s) {
+	assert(s);
+	s->head = NULL;
+}
+PNode BuySListNode(DataType data) {
+	PNode pNewNode = (PNode)malloc(sizeof(Node));
+	if (pNewNode == NULL) {
+		assert(0);
+		return NULL;
+	}
+	pNewNode->data = data;
+	pNewNode->next = NULL;
+	return pNewNode;
+}
+void SlistPushBack(Slist* s, DataType data) {
+	assert(s);
+	PNode PNewNode = BuySListNode(data);
+	if (s->head == NULL) {
+		s->head = PNewNode;
+	} else {
+		PNode pCur = s->head;
+		while (pCur->next) {
+			pCur = pCur->next;
+		}
+		pCur->next = PNewNode;
+	}
+}
+void SlistPopBack(Slist*  s) {
+	assert(s);
+	if (s->head == NULL) {
+		//没有结点
+		return;
+	} else if (s->head->next == NULL) {
+		//一个结点
+		free(s->head);
+		s->head = NULL;
+	} else {
+		//多个结点
+		PNode pCur = s->head;
+		PNode pPre = NULL;
+		while (pCur->next) {
+			pPre = pCur;
+			pCur = pCur->next;
+		}
+		free(pCur);
+		pPre->next = NULL;
+	}
+}
+void SlistPushFront(Slist* s, DataType data) {
+	assert(s);
+	PNode pNewNode = BuySListNode(data);
+	if (s->head == NULL) {
+		s->head = pNewNode;
+	} else {
+		pNewNode->next = s->head;
+		s->head = pNewNode;
+	}
+}
+void SlistInsert(PNode pos, DataType data) {
+	//没有给S->head,所以只能往后插
+	if (pos == NULL) {
+		return;
+	}
+	PNode pNewNode = BuySListNode(data);
+	pNewNode->next = pos->next;
+	pos->next = pNewNode;
+}
+void SlistErase(Slist* s, PNode pos) {
+	assert(s);
+	if (pos == NULL || s->head == NULL) {
+		return;
+	}
+	if (s->head == pos) {
+		s->head = pos->next;
+	} else {
+		PNode pPrePos = s->head;
+		while (pPrePos && pPrePos->next != pos) {
+			pPrePos = pPrePos->next;
+		}
+		if (pPrePos) {
+			pPrePos->next = pos->next;
+		}
+	}
+	free(pos);
+}
+PNode SlistFind(Slist* s, DataType data) {
+	assert(s);
+	PNode pCur = s->head;
+	while (pCur) {
+		if (pCur->data == data) {
+			return pCur;
+		}
+		pCur = pCur->next;
+	}
+	return NULL;
+}
+size_t SlistSize(Slist* s) {
+	assert(s);
+	PNode pCur = s->head;
+	size_t count = 0;
+	while (pCur) {
+			count++;
+			pCur = pCur->next;
+	}
+	return count;
+}
+int SlistEmpty(Slist* s) {
+	return s->head == NULL;
+}
+void PrintSlist(Slist* s) {
+	assert(s);
+	PNode pCur = s->head;
+	while (pCur) {
+		printf("%d->", pCur->data);
+		pCur = pCur->next;
+	}
+	printf("NULL\n");
+}
+//头删
+void SlistPopFront(Slist* s) {
+	assert(s);
+	PNode pDelNode = NULL;
+	if (s->head == NULL) {
+		return;
+	}
+	pDelNode = s->head;
+	s->head = pDelNode->next;
+	free(pDelNode);
+}
+void TestSlist() {
+	Slist s;
+	SlistInit(&s);
+	SlistPushBack(&s, 1);
+	SlistPushBack(&s, 2);
+	SlistPushBack(&s, 3);
+	SlistPushBack(&s, 4);
+	PrintSlist(&s);
+	SlistPopBack(&s);
+	PrintSlist(&s);
+	SlistPushFront(&s, 5);
+
+	PrintSlist(&s);
+	SlistPopFront(&s);
+	PrintSlist(&s);
+	SlistInsert(SlistFind(&s, 2), 2);
+	PrintSlist(&s);
+	SlistErase(&s, SlistFind(&s, 2));
+
+	PrintSlist(&s);
+	SlistFind(&s, 2);
+
+	PrintSlist(&s);
+	SlistSize(&s);
+	SlistEmpty(&s);
+}
+int main() {
+	TestSlist();
+	system("pause");
+	return 0;
+}
