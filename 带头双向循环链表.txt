@@ -1,0 +1,133 @@
+Dlist.h文件实现
+#pragma once
+typedef int DlDataType;
+typedef struct DlistNode {
+	struct DlistNode* next;
+	struct DlistNode* pPre;
+	DlDataType data;
+}DlNode,*PDlNode;
+void DlistInit(PDlNode* head);
+PDlNode BuyDlistNode(DlDataType data);
+void DlistPushBack(PDlNode head, DlDataType data);
+void DlistPopBack(PDlNode head);
+void DlistPushFront(PDlNode head, DlDataType data);
+void DlistPopFront(PDlNode head);
+void DlistInsert(PDlNode pos, DlDataType data);
+void DlistErase(PDlNode pos);
+void DlistClear(PDlNode head);
+void DlistDestroy(PDlNode* head);
+Dlist.c文件实现
+#include"Dlist.h"
+#include<assert.h>
+#include<malloc.h>
+#include<stdio.h>
+#include<stdlib.h>
+void DlistInit(PDlNode* head) {
+	assert(head);
+	*head = (PDlNode)malloc(sizeof(DlNode));
+	if (*head == NULL) {
+		assert(0);
+		return;
+	}
+	(*head)->next = *head;
+	(*head)->pPre = *head;
+}
+PDlNode BuyDlistNode(DlDataType data) {
+	PDlNode pNewNode = (PDlNode)malloc(sizeof(DlNode));
+	if (pNewNode == NULL) {
+		assert(0);
+		return NULL;
+	}
+	pNewNode->next = NULL;
+	pNewNode->pPre = NULL;
+	return pNewNode;
+}
+void DlistPushBack(PDlNode head, DlDataType data) {
+	PDlNode pNewNode = BuyDlistNode(data);
+	pNewNode->next = head;
+	pNewNode->pPre = head->pPre;
+	head->pPre->next = pNewNode;
+	head->pPre = pNewNode;
+}
+void DlistPopBack(PDlNode head){
+	assert(head);
+	if (head == head->next) {
+		return;
+	}
+	PDlNode pDelNode = head->pPre;
+	pDelNode->pPre->next = head;
+	head->pPre = pDelNode->pPre;
+	free(pDelNode);
+}
+void DlistPushFront(PDlNode head, DlDataType data) {
+	PDlNode pNewNode = BuyDlistNode(data);
+	pNewNode->next = head->next;
+	pNewNode->pPre = head;
+	head->next = pNewNode;
+	pNewNode->next->pPre = pNewNode;
+}
+void DlistPopFront(PDlNode head) {
+	assert(head);
+	if (head == head->next) {
+		return;
+	} else {
+		PDlNode pDelNode = head->next;
+		head->next = pDelNode->next;
+		pDelNode->next->pPre = head;
+		free(pDelNode);
+	}
+}
+void DlistInsert(PDlNode pos, DlDataType data) {
+	if (pos == NULL) {
+		return;
+	}
+	PDlNode pNewNode = BuyDlistNode(data);
+	pNewNode->next = pos;
+	pNewNode->pPre = pos->pPre;;
+	pos->pPre = pNewNode;
+	pNewNode->pPre->next = pNewNode;
+}
+void DlistErase(PDlNode pos) {
+	if (pos == NULL) {
+		return;
+	}
+	pos->next->pPre = pos->pPre;
+	pos->pPre->next = pos->next;
+	free(pos);
+}
+void DlistClear(PDlNode head) {
+	PDlNode pCur = head->next;
+	while (pCur!=head) {
+		head->next = pCur->next;
+		free(pCur);
+		pCur = head->next;
+	}
+	head->next = head;
+	head->pPre = head;
+}
+void DlistDestroy(PDlNode* head) {
+	DlistClear(*head);
+	free(*head);
+	*head = NULL;
+}
+void test() {
+	PDlNode head = NULL;
+	DlistInit(&head);
+	DlistPushBack(head,1);
+	DlistPushBack(head, 2);
+	DlistPushBack(head, 3);
+	DlistPushBack(head, 3);
+	DlistPushBack(head, 4);
+	DlistPopBack(head);
+	DlistPushFront(head, 6);
+	DlistPopFront(head);
+	DlistInsert(pos, 2);
+	DlistErase(pos);
+	DlistClear(head);
+	DlistDestroy(&head);
+}
+int main() {
+	test();
+	system("pause");
+	return 0;
+}
