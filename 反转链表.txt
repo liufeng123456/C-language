@@ -1,0 +1,28 @@
+1、第一种方法
+typedef struct ListNode* pNode;
+struct ListNode* reverseList(struct ListNode* head){
+    pNode pPre = NULL;
+    pNode pCur = head;
+    while(pCur){
+        pNode next = pCur->next;
+        pCur->next = pPre;
+        pPre = pCur;
+        pCur = next;
+    }
+    return pPre;
+}
+2、第二种方法
+//头删头插的方法 
+typedef struct ListNode* pNode;
+struct ListNode* reverseList(struct ListNode* head){
+    pNode pCur = head;
+    pNode result = NULL;
+    while(pCur){
+        pNode next = pCur->next;
+        pCur->next = result;
+        result = pCur;
+        pCur = next;
+    }
+    return result;
+}
+
